@@ -22,7 +22,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 4,  // Updated to version 4 for expenses table
+      version: 5,  // Updated to version 5 for todos table
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -152,6 +152,19 @@ class DatabaseHelper {
       )
     ''');
 
+    // Create todos table
+    await db.execute('''
+      CREATE TABLE todos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT,
+        isCompleted INTEGER NOT NULL DEFAULT 0,
+        createdAt INTEGER NOT NULL,
+        relatedExpenseId INTEGER,
+        FOREIGN KEY (relatedExpenseId) REFERENCES expenses(id) ON DELETE SET NULL
+      )
+    ''');
+
     // Create settings table
     await db.execute('''
       CREATE TABLE ${DbConstants.tableSettings} (
@@ -215,6 +228,21 @@ class DatabaseHelper {
           description TEXT,
           payment_method TEXT NOT NULL,
           created_at TEXT NOT NULL
+        )
+      ''');
+    }
+    
+    if (oldVersion < 5 && newVersion >= 5) {
+      // Migration from version 4 to 5: Create todos table
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS todos (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          description TEXT,
+          isCompleted INTEGER NOT NULL DEFAULT 0,
+          createdAt INTEGER NOT NULL,
+          relatedExpenseId INTEGER,
+          FOREIGN KEY (relatedExpenseId) REFERENCES expenses(id) ON DELETE SET NULL
         )
       ''');
     }

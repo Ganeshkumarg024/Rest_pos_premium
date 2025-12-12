@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:typed_data';
+import 'package:csv/csv.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -7,6 +9,36 @@ import 'package:restaurant_billing/core/utils/currency_formatter.dart';
 import 'package:intl/intl.dart';
 
 class ExpenseExportService {
+
+  // New CSV export method
+  Future<Uint8List> generateExpenseCsv({
+    required DateTime startDate,
+    required DateTime endDate,
+    required List<ExpenseModel> expenses,
+    required Map<String, double> categorySummary,
+    required double totalAmount,
+    String restaurantName = 'The Chozha Pos',
+  }) async {
+    // Build CSV rows
+    final List<List<dynamic>> rows = [];
+    // Header
+    rows.add(['Date', 'Category', 'Description', 'Method', 'Amount']);
+    final dateFormat = DateFormat('dd MMM yyyy');
+    for (final e in expenses) {
+      rows.add([
+        dateFormat.format(e.date),
+        e.category,
+        e.description ?? '-',
+        e.paymentMethod,
+        e.amount,
+      ]);
+    }
+    // Convert to CSV string
+    final csv = ListToCsvConverter().convert(rows);
+    // Return as Uint8List
+    return Uint8List.fromList(utf8.encode(csv));
+  }
+
   Future<Uint8List> generateExpenseReportPdf({
     required DateTime startDate,
     required DateTime endDate,

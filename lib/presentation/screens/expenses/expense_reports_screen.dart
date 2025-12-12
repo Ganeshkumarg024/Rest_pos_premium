@@ -1,12 +1,16 @@
+import 'dart:io';
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:printing/printing.dart';
+import 'package:restaurant_billing/core/constants/expense_constants.dart';
 import 'package:restaurant_billing/core/theme/app_theme.dart';
 import 'package:restaurant_billing/core/utils/currency_formatter.dart';
-import 'package:restaurant_billing/core/constants/expense_constants.dart';
 import 'package:restaurant_billing/presentation/providers/expense_provider.dart';
 import 'package:restaurant_billing/services/expense_export_service.dart';
-import 'package:printing/printing.dart';
-import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ExpenseReportsScreen extends ConsumerStatefulWidget {
   const ExpenseReportsScreen({super.key});
@@ -77,6 +81,34 @@ class _ExpenseReportsScreenState extends ConsumerState<ExpenseReportsScreen> {
       if (mounted) {
         setState(() => _isExporting = false);
       }
+    }
+  }
+
+  Future<void> _exportCsv(double total, Map<String, double> byCategory) async {
+    setState(() => _isExporting = true);
+    try {
+      final repository = ref.read(expenseRepositoryProvider);
+      final expenses = await repository.getExpensesByDateRange(_startDate, _endDate);
+      final exportService = ExpenseExportService();
+      final csvBytes = await exportService.generateExpenseCsv(
+        startDate: _startDate,
+        endDate: _endDate,
+        expenses: expenses,
+        categorySummary: byCategory,
+        totalAmount: total,
+      );
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/Expense_Report_${DateFormat('yyyyMMdd').format(_startDate)}_${DateFormat('yyyyMMdd').format(_endDate)}.csv');
+      await file.writeAsBytes(csvBytes);
+      await Share.shareXFiles([XFile(file.path)], text: 'Expense Report CSV');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error generating CSV: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
     }
   }
 
@@ -347,16 +379,12 @@ class _ExpenseReportsScreenState extends ConsumerState<ExpenseReportsScreen> {
               ),
               const SizedBox(height: 12),
               FloatingActionButton.extended(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('CSV export feature coming soon!'),
-                    ),
-                  );
-                },
+                onPressed: _isExporting || total == 0 
+                  ? null 
+                  : () => _exportCsv(total, byCategory),
                 icon: const Icon(Icons.table_chart),
                 label: const Text('Export CSV'),
-                backgroundColor: Colors.green,
+                backgroundColor: total == 0 ? Colors.grey : Colors.green,
               ),
             ],
           );

@@ -8,11 +8,25 @@ import 'package:restaurant_billing/presentation/screens/expenses/add_expense_scr
 import 'package:restaurant_billing/presentation/screens/expenses/expense_reports_screen.dart';
 import 'package:intl/intl.dart';
 
-class ExpenseListScreen extends ConsumerWidget {
+class ExpenseListScreen extends ConsumerStatefulWidget {
   const ExpenseListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ExpenseListScreen> createState() => _ExpenseListScreenState();
+}
+
+class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedSort = 'date_desc';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final expensesAsync = ref.watch(expensesProvider);
     final todayTotal = ref.watch(todayExpensesProvider);
     final monthTotal = ref.watch(monthExpensesProvider);
@@ -37,6 +51,70 @@ class ExpenseListScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
+          // Search and Sort Bar
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Colors.grey.shade100,
+            child: Column(
+              children: [
+                // Search field
+                TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search by category or description...',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                              ref.read(expensesProvider.notifier).setSearchQuery('');
+                            },
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  onChanged: (value) {
+                    ref.read(expensesProvider.notifier).setSearchQuery(value);
+                  },
+                ),
+                const SizedBox(height: 12),
+                // Sort dropdown
+                Row(
+                  children: [
+                    const Icon(Icons.sort, size: 20),
+                    const SizedBox(width: 8),
+                    const Text('Sort by:', style: TextStyle(fontWeight: FontWeight.w500)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButton<String>(
+                        value: _selectedSort,
+                        isExpanded: true,
+                        items: const [
+                          DropdownMenuItem(value: 'date_desc', child: Text('Date (Newest First)')),
+                          DropdownMenuItem(value: 'date_asc', child: Text('Date (Oldest First)')),
+                   DropdownMenuItem(value: 'amount_desc', child: Text('Amount (High to Low)')),
+                          DropdownMenuItem(value: 'amount_asc', child: Text('Amount (Low to High)')),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => _selectedSort = value);
+                            ref.read(expensesProvider.notifier).setSortOrder(value);
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
           // Summary Cards
           Container(
             padding: const EdgeInsets.all(16),
@@ -74,8 +152,12 @@ class ExpenseListScreen extends ConsumerWidget {
 
           // Expense List
           Expanded(
-            child: expensesAsync.when(
-              data: (expenses) {
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await ref.read(expensesProvider.notifier).loadExpenses();
+              },
+              child: expensesAsync.when(
+                data: (expenses) {
                 if (expenses.isEmpty) {
                   return Center(
                     child: Column(
@@ -154,11 +236,28 @@ class ExpenseListScreen extends ConsumerWidget {
                           ),
                         );
                       },
-                      onDismissed: (direction) {
-                        ref.read(expensesProvider.notifier).deleteExpense(expense.id!);
+                      onDismissed: (direction) async {
+                        final deletedId = expense.id!;
+                        await ref.read(expensesProvider.notifier).deleteExpense(deletedId);
+                        
+                        if (!mounted) return;
+                        
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Expense deleted')),
-                        );
+                          SnackBar(
+                            content: const Text('Expense deleted'),
+                            action: SnackBarAction(
+                              label: 'Undo',
+                              onPressed: () async {
+                                await ref.read(expensesProvider.notifier).undoDelete();
+                              },
+                            ),
+                            duration: const Duration(seconds: 5),
+                          ),
+                        ).closed.then((reason) {
+                          if (reason != SnackBarClosedReason.action) {
+                            ref.read(expensesProvider.notifier).clearUndoCache();
+                          }
+                        });
                       },
                       child: Card(
                         margin: const EdgeInsets.only(bottom: 12),
@@ -276,6 +375,7 @@ class ExpenseListScreen extends ConsumerWidget {
               ),
             ),
           ),
+        ),
         ],
       ),
       floatingActionButton: FloatingActionButton(

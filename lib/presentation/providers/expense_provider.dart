@@ -12,6 +12,9 @@ final expensesProvider = StateNotifierProvider<ExpensesNotifier, AsyncValue<List
 
 class ExpensesNotifier extends StateNotifier<AsyncValue<List<ExpenseModel>>> {
   final ExpenseRepository _repository;
+  String _searchQuery = '';
+  String _sortOrder = 'date_desc'; // date_desc, date_asc, amount_desc, amount_asc
+  ExpenseModel? _lastDeletedExpense;
 
   ExpensesNotifier(this._repository) : super(const AsyncValue.loading()) {
     loadExpenses();
@@ -20,12 +23,54 @@ class ExpensesNotifier extends StateNotifier<AsyncValue<List<ExpenseModel>>> {
   Future<void> loadExpenses() async {
     state = const AsyncValue.loading();
     try {
-      final expenses = await _repository.getAllExpenses();
+      var expenses = await _repository.getAllExpenses();
+      expenses = _applySearchAndSort(expenses);
       state = AsyncValue.data(expenses);
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
     }
   }
+
+  List<ExpenseModel> _applySearchAndSort(List<ExpenseModel> expenses) {
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      expenses = expenses.where((expense) {
+        final query = _searchQuery.toLowerCase();
+        return expense.category.toLowerCase().contains(query) ||
+               (expense.description?.toLowerCase().contains(query) ?? false);
+      }).toList();
+    }
+
+    // Apply sorting
+    switch (_sortOrder) {
+      case 'date_desc':
+        expenses.sort((a, b) => b.date.compareTo(a.date));
+        break;
+      case 'date_asc':
+        expenses.sort((a, b) => a.date.compareTo(b.date));
+        break;
+      case 'amount_desc':
+        expenses.sort((a, b) => b.amount.compareTo(a.amount));
+        break;
+      case 'amount_asc':
+        expenses.sort((a, b) => a.amount.compareTo(b.amount));
+        break;
+    }
+
+    return expenses;
+  }
+
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    loadExpenses();
+  }
+
+  void setSortOrder(String order) {
+    _sortOrder = order;
+    loadExpenses();
+  }
+
+  String get currentSortOrder => _sortOrder;
 
   Future<void> loadExpensesByDateRange(DateTime startDate, DateTime endDate) async {
     state = const AsyncValue.loading();
@@ -59,8 +104,15 @@ class ExpensesNotifier extends StateNotifier<AsyncValue<List<ExpenseModel>>> {
     }
   }
 
-  Future<bool> deleteExpense(int id) async {
+  Future<bool> deleteExpense(int id, {bool saveForUndo = true}) async {
     try {
+      if (saveForUndo) {
+        // Find and save the expense before deleting
+        final currentState = state;
+        if (currentState is AsyncData<List<ExpenseModel>>) {
+          _lastDeletedExpense = currentState.value.firstWhere((e) => e.id == id);
+        }
+      }
       await _repository.deleteExpense(id);
       await loadExpenses();
       return true;
@@ -68,6 +120,23 @@ class ExpensesNotifier extends StateNotifier<AsyncValue<List<ExpenseModel>>> {
       state = AsyncValue.error(error, stackTrace);
       return false;
     }
+  }
+
+  Future<bool> undoDelete() async {
+    if (_lastDeletedExpense == null) return false;
+    try {
+      await _repository.createExpense(_lastDeletedExpense!);
+      _lastDeletedExpense = null;
+      await loadExpenses();
+      return true;
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      return false;
+    }
+  }
+
+  void clearUndoCache() {
+    _lastDeletedExpense = null;
   }
 }
 

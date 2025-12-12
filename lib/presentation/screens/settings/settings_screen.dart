@@ -9,6 +9,9 @@ import 'package:restaurant_billing/presentation/screens/settings/tax_settings_sc
 import 'package:restaurant_billing/presentation/screens/settings/notification_settings_screen.dart';
 import 'package:restaurant_billing/presentation/screens/settings/printer_settings_screen.dart';
 import 'package:restaurant_billing/presentation/screens/expenses/expense_list_screen.dart';
+import 'package:restaurant_billing/presentation/screens/todos/todo_list_screen.dart';
+import 'package:restaurant_billing/presentation/screens/analytics/sales_analytics_screen.dart';
+import 'package:restaurant_billing/presentation/screens/analytics/analytics_debug_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -177,6 +180,60 @@ class SettingsScreen extends ConsumerWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const ExpenseListScreen(),
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: AppTheme.spacingM),
+
+          // Todo List
+          _SettingCard(
+            icon: Icons.check_box,
+            title: 'Todo List',
+            subtitle: 'Manage your expense-related tasks and action items.',
+            iconColor: Colors.green,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TodoListScreen(),
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: AppTheme.spacingM),
+
+          // Sales Analytics
+          _SettingCard(
+            icon: Icons.analytics,
+            title: 'Sales Analytics',
+            subtitle: 'View trends, top items, and customer insights.',
+            iconColor: Colors.purple,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SalesAnalyticsScreen(),
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: AppTheme.spacingM),
+
+          // Analytics Debug (Temporary)
+          _SettingCard(
+            icon: Icons.bug_report,
+            title: 'Analytics Debug',
+            subtitle: 'Diagnose analytics data issues',
+            iconColor: Colors.red,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AnalyticsDebugScreen(),
                 ),
               );
             },
