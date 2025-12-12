@@ -5,6 +5,7 @@ import 'presentation/providers/theme_provider.dart';
 import 'presentation/providers/restaurant_provider.dart';
 import 'presentation/screens/splash_screen.dart';
 import 'presentation/screens/auth/login_screen.dart';
+import 'presentation/screens/auth/license_screen.dart';
 import 'presentation/screens/dashboard/dashboard_screen.dart';
 
 class RestaurantBillingApp extends ConsumerWidget {
@@ -24,6 +25,7 @@ class RestaurantBillingApp extends ConsumerWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/dashboard': (context) => const DashboardScreen(),
+        '/license': (context) => const LicenseScreen(),
       },
     );
   }

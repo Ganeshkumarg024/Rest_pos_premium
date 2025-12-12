@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:restaurant_billing/core/theme/app_theme.dart';
+import 'package:restaurant_billing/services/license_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -56,22 +57,34 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     
     Timer(const Duration(seconds: 4), () async {
       if (mounted) {
-        // Check authentication status
-        final isAuthenticated = await checkAuthStatus();
-        if (mounted) {
-          if (isAuthenticated) {
-            Navigator.of(context).pushReplacementNamed('/dashboard');
-          } else {
-            Navigator.of(context).pushReplacementNamed('/login');
-          }
-        }
+        await _checkAuthAndLicenseStatus();
       }
     });
   }
 
-  Future<bool> checkAuthStatus() async {
+  Future<void> _checkAuthAndLicenseStatus() async {
+    // Check License First
+    final licenseService = LicenseService();
+    final isLicensed = await licenseService.isLicensed();
+
+    if (!mounted) return;
+
+    if (!isLicensed) {
+      Navigator.of(context).pushReplacementNamed('/license');
+      return;
+    }
+
+    // Check Auth
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('is_logged_in') ?? false;
+    final isLoggedIn = prefs.getBool('is_logged_in') ?? false;
+
+    if (mounted) {
+      if (isLoggedIn) {
+        Navigator.of(context).pushReplacementNamed('/dashboard');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
+    }
   }
 
   void _startAnimations() async {
