@@ -13,7 +13,6 @@ class RestaurantBillingApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-    final isAuthenticated = ref.watch(authProvider);
 
     return MaterialApp(
       title: 'Restaurant Billing',
@@ -23,7 +22,8 @@ class RestaurantBillingApp extends ConsumerWidget {
       themeMode: themeMode,
       home: const SplashScreen(),
       routes: {
-        '/home': (context) => isAuthenticated ? const DashboardScreen() : const LoginScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
       },
     );
   }

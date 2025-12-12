@@ -93,9 +93,16 @@ class _DashboardHome extends ConsumerWidget {
                       child: const Text('Cancel'),
                     ),
                     TextButton(
-                      onPressed: () {
-                        ref.read(authProvider.notifier).logout();
-                        Navigator.pop(context);
+                      onPressed: () async {
+                        await ref.read(authProvider.notifier).logout();
+                        if (context.mounted) {
+                          Navigator.of(context).pop(); // Close dialog
+                          // Navigate to login screen and clear all routes
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/login',
+                            (route) => false,
+                          );
+                        }
                       },
                       child: const Text('Logout'),
                     ),

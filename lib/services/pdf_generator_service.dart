@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:restaurant_billing/data/models/order_model.dart';
@@ -18,49 +19,55 @@ class PdfGeneratorService {
 
     // Thermal paper width: 58mm = ~165 points at 72 DPI
     const double pageWidth = 58 * PdfPageFormat.mm;
-    // Variable height based on content
-    const double pageHeight = 297 * PdfPageFormat.mm; // A4 height as max
-
-    // Load logo image if available
+    
+    // Load logo from assets instead of file path
     pw.ImageProvider? logoImage;
-    if (restaurant?.logoPath != null) {
-      try {
-        final logoFile = File(restaurant!.logoPath!);
-        if (await logoFile.exists()) {
-          final logoBytes = await logoFile.readAsBytes();
-          logoImage = pw.MemoryImage(logoBytes);
-        }
-      } catch (e) {
-        // If logo fails to load, continue without it
-        print('Failed to load logo: $e');
-      }
+    try {
+      // Load from assets - this will work in the PDF
+      final logoData = await rootBundle.load('assets/images/logo.png');
+      logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
+    } catch (e) {
+      print('Failed to load logo from assets: $e');
     }
+
+    // Calculate content height dynamically
+    final itemCount = order.items?.length ?? 0;
+    final baseHeight = 380.0;
+    final itemHeight = itemCount * 20.0;
+    final totalHeight = baseHeight + itemHeight + 30; // Minimal padding at bottom
 
     pdf.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat(pageWidth, pageHeight),
-        margin: pw.EdgeInsets.all(8),
+        pageFormat: PdfPageFormat(pageWidth, totalHeight),
+        margin: const pw.EdgeInsets.all(10),
         build: (context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.center,
+            mainAxisSize: pw.MainAxisSize.min,
             children: [
-              // Restaurant Logo
+              // Restaurant Logo - Fixed to show properly
               if (logoImage != null)
                 pw.Container(
-                  margin: pw.EdgeInsets.only(bottom: 8),
-                  child: pw.Image(
-                    logoImage,
-                    width: 50,
-                    height: 50,
-                    fit: pw.BoxFit.cover,
+                  margin: const pw.EdgeInsets.only(bottom: 8),
+                  width: 60,
+                  height: 60,
+                  decoration: pw.BoxDecoration(
+                    shape: pw.BoxShape.circle,
+                    color: PdfColors.white,
+                  ),
+                  child: pw.ClipOval(
+                    child: pw.Image(
+                      logoImage,
+                      fit: pw.BoxFit.cover,
+                    ),
                   ),
                 ),
 
               // Restaurant Name
               pw.Text(
-                restaurant?.name ?? 'Restaurant',
+                restaurant?.name ?? 'The Golden Spoon',
                 style: pw.TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: pw.FontWeight.bold,
                 ),
                 textAlign: pw.TextAlign.center,
@@ -69,64 +76,64 @@ class PdfGeneratorService {
               // Restaurant Details
               if (restaurant?.address != null && restaurant!.address!.isNotEmpty)
                 pw.Padding(
-                  padding: pw.EdgeInsets.only(top: 4),
+                  padding: const pw.EdgeInsets.only(top: 3),
                   child: pw.Text(
                     restaurant.address!,
-                    style: pw.TextStyle(fontSize: 8),
+                    style: const pw.TextStyle(fontSize: 8),
                     textAlign: pw.TextAlign.center,
                   ),
                 ),
 
               if (restaurant?.phone != null && restaurant!.phone!.isNotEmpty)
                 pw.Padding(
-                  padding: pw.EdgeInsets.only(top: 2),
+                  padding: const pw.EdgeInsets.only(top: 2),
                   child: pw.Text(
                     'Phone: ${restaurant.phone}',
-                    style: pw.TextStyle(fontSize: 8),
+                    style: const pw.TextStyle(fontSize: 8),
                     textAlign: pw.TextAlign.center,
                   ),
                 ),
 
               if (restaurant?.email != null && restaurant!.email!.isNotEmpty)
                 pw.Padding(
-                  padding: pw.EdgeInsets.only(top: 2),
+                  padding: const pw.EdgeInsets.only(top: 2),
                   child: pw.Text(
                     'Email: ${restaurant.email}',
-                    style: pw.TextStyle(fontSize: 8),
+                    style: const pw.TextStyle(fontSize: 8),
                     textAlign: pw.TextAlign.center,
                   ),
                 ),
 
               // Divider
               pw.Container(
-                margin: pw.EdgeInsets.symmetric(vertical: 8),
+                margin: const pw.EdgeInsets.symmetric(vertical: 8),
                 child: pw.Divider(thickness: 1),
               ),
 
               // Invoice Number
               _buildInfoRow('Invoice #', _generateInvoiceNumber(order.id!)),
-              pw.SizedBox(height: 4),
+              pw.SizedBox(height: 3),
               
               // Date
               _buildInfoRow(
                 'Date',
-                DateFormat('dd MMM, yyyy').format(order.createdAt),
+                DateFormat('dd MMMM, yyyy').format(order.createdAt),
               ),
-              pw.SizedBox(height: 4),
+              pw.SizedBox(height: 3),
               
               // Time
               _buildInfoRow(
                 'Time',
                 DateFormat('hh:mm a').format(order.createdAt),
               ),
-              pw.SizedBox(height: 4),
+              pw.SizedBox(height: 3),
               
               // Table
               _buildInfoRow('Table #', order.tableName ?? 'N/A'),
 
               // Divider
               pw.Container(
-                margin: pw.EdgeInsets.symmetric(vertical: 8),
+                margin: const pw.EdgeInsets.symmetric(vertical: 8),
                 child: pw.Divider(thickness: 1),
               ),
 
@@ -169,11 +176,11 @@ class PdfGeneratorService {
                 ],
               ),
 
-              pw.SizedBox(height: 8),
+              pw.SizedBox(height: 6),
 
               // Items List
               ...?order.items?.map((item) => pw.Padding(
-                padding: pw.EdgeInsets.only(bottom: 6),
+                padding: const pw.EdgeInsets.only(bottom: 5),
                 child: pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -182,14 +189,14 @@ class PdfGeneratorService {
                       flex: 3,
                       child: pw.Text(
                         item.menuItemName ?? 'Unknown',
-                        style: pw.TextStyle(fontSize: 9),
+                        style: const pw.TextStyle(fontSize: 9),
                       ),
                     ),
                     pw.SizedBox(
                       width: 25,
                       child: pw.Text(
                         '${item.quantity}',
-                        style: pw.TextStyle(fontSize: 9),
+                        style: const pw.TextStyle(fontSize: 9),
                         textAlign: pw.TextAlign.center,
                       ),
                     ),
@@ -197,7 +204,7 @@ class PdfGeneratorService {
                       width: 40,
                       child: pw.Text(
                         CurrencyFormatter.formatForPdf(item.totalPrice),
-                        style: pw.TextStyle(fontSize: 9),
+                        style: const pw.TextStyle(fontSize: 9),
                         textAlign: pw.TextAlign.right,
                       ),
                     ),
@@ -207,13 +214,13 @@ class PdfGeneratorService {
 
               // Divider
               pw.Container(
-                margin: pw.EdgeInsets.symmetric(vertical: 8),
+                margin: const pw.EdgeInsets.symmetric(vertical: 8),
                 child: pw.Divider(thickness: 1),
               ),
 
               // Subtotal
               _buildSummaryRow('Subtotal', order.subtotal),
-              pw.SizedBox(height: 4),
+              pw.SizedBox(height: 3),
 
               // Tax
               _buildSummaryRow(
@@ -223,7 +230,7 @@ class PdfGeneratorService {
 
               // Divider
               pw.Container(
-                margin: pw.EdgeInsets.symmetric(vertical: 8),
+                margin: const pw.EdgeInsets.symmetric(vertical: 8),
                 child: pw.Divider(thickness: 1),
               ),
 
@@ -250,22 +257,63 @@ class PdfGeneratorService {
 
               // Divider
               pw.Container(
-                margin: pw.EdgeInsets.symmetric(vertical: 8),
+                margin: const pw.EdgeInsets.symmetric(vertical: 8),
                 child: pw.Divider(thickness: 1),
               ),
 
               // Thank you message
               pw.Padding(
-                padding: pw.EdgeInsets.only(top: 8),
+                padding: const pw.EdgeInsets.only(top: 4, bottom: 4),
                 child: pw.Text(
                   'Thank you for your visit!',
-                  style: pw.TextStyle(fontSize: 9),
+                  style: const pw.TextStyle(fontSize: 9),
                   textAlign: pw.TextAlign.center,
                 ),
               ),
 
-              // Footer spacing
-              pw.SizedBox(height: 16),
+              // Cut line indicator (dashed line at bottom)
+              pw.Container(
+                margin: const pw.EdgeInsets.only(top: 8),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.center,
+                  children: [
+                    pw.Container(
+                      width: 30,
+                      height: 1,
+                      decoration: const pw.BoxDecoration(
+                        border: pw.Border(
+                          bottom: pw.BorderSide(
+                            color: PdfColors.grey400,
+                            width: 1,
+                            style: pw.BorderStyle.dashed,
+                          ),
+                        ),
+                      ),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.symmetric(horizontal: 6),
+                      child: pw.Icon(
+                        const pw.IconData(0xe146), // scissors icon
+                        size: 12,
+                        color: PdfColors.grey400,
+                      ),
+                    ),
+                    pw.Container(
+                      width: 30,
+                      height: 1,
+                      decoration: const pw.BoxDecoration(
+                        border: pw.Border(
+                          bottom: pw.BorderSide(
+                            color: PdfColors.grey400,
+                            width: 1,
+                            style: pw.BorderStyle.dashed,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           );
         },

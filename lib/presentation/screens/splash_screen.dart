@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:restaurant_billing/core/theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -53,11 +54,24 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     _startAnimations();
     
-    Timer(const Duration(seconds: 4), () {
+    Timer(const Duration(seconds: 4), () async {
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        // Check authentication status
+        final isAuthenticated = await checkAuthStatus();
+        if (mounted) {
+          if (isAuthenticated) {
+            Navigator.of(context).pushReplacementNamed('/dashboard');
+          } else {
+            Navigator.of(context).pushReplacementNamed('/login');
+          }
+        }
       }
     });
+  }
+
+  Future<bool> checkAuthStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('is_logged_in') ?? false;
   }
 
   void _startAnimations() async {

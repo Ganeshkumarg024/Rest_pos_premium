@@ -40,7 +40,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (success && mounted) {
-      // Navigation will happen automatically via authProvider watch
+      // Navigate to dashboard after successful login
+      Navigator.of(context).pushReplacementNamed('/dashboard');
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid credentials')),
