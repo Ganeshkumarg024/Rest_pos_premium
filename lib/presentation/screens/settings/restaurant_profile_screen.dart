@@ -139,248 +139,203 @@ class _RestaurantProfileScreenState extends ConsumerState<RestaurantProfileScree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          // Modern App Bar
-          SliverAppBar(
-            expandedHeight: 200,
-            floating: false,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'Restaurant Profile',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppTheme.primaryColor,
-                      AppTheme.primaryColor.withValues(alpha: 0.7),
-                    ],
-                  ),
-                ),
+      appBar: AppBar(
+        title: const Text('Restaurant Profile'),
+        elevation: 0,
+      ),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Logo Section
+              Center(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 40),
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.restaurant,
-                        size: 50,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: Form(
-              key: _formKey,
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Logo Section
-                    Center(
-                      child: Column(
-                        children: [
-                          GestureDetector(
-                            onTap: _pickLogo,
-                            child: Container(
-                              width: 120,
-                              height: 120,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppTheme.primaryColor.withOpacity(0.1),
-                                border: Border.all(
-                                  color: AppTheme.primaryColor.withOpacity(0.3),
-                                  width: 3,
+                    GestureDetector(
+                      onTap: _pickLogo,
+                      child: Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppTheme.primaryColor.withOpacity(0.1),
+                          border: Border.all(
+                            color: AppTheme.primaryColor.withOpacity(0.3),
+                            width: 3,
+                          ),
+                        ),
+                        child: _logoFile != null
+                            ? ClipOval(
+                                child: Image.file(
+                                  _logoFile!,
+                                  fit: BoxFit.cover,
                                 ),
-                              ),
-                              child: _logoFile != null
-                                  ? ClipOval(
-                                      child: Image.file(
-                                        _logoFile!,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    )
-                                  : _existingLogoPath != null
-                                      ? ClipOval(
-                                          child: Image.file(
-                                            File(_existingLogoPath!),
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) {
-                                              return const Icon(
-                                                Icons.restaurant,
-                                                size: 50,
-                                                color: AppTheme.primaryColor,
-                                              );
-                                            },
-                                          ),
-                                        )
-                                      : const Icon(
+                              )
+                            : _existingLogoPath != null
+                                ? ClipOval(
+                                    child: Image.file(
+                                      File(_existingLogoPath!),
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return const Icon(
                                           Icons.restaurant,
                                           size: 50,
                                           color: AppTheme.primaryColor,
-                                        ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          TextButton.icon(
-                            onPressed: _pickLogo,
-                            icon: const Icon(Icons.camera_alt),
-                            label: Text(_logoFile != null || _existingLogoPath != null
-                                ? 'Change Logo'
-                                : 'Add Logo'),
-                            style: TextButton.styleFrom(
-                              foregroundColor: AppTheme.primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Section: Basic Information
-                    _buildSectionHeader('Basic Information', Icons.info_outline),
-                    const SizedBox(height: 16),
-                    _buildModernTextField(
-                      controller: _nameController,
-                      label: 'Restaurant Name',
-                      icon: Icons.restaurant_menu,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter restaurant name';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _buildModernTextField(
-                      controller: _codeController,
-                      label: 'Restaurant Code',
-                      icon: Icons.qr_code,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter restaurant code';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Section: Contact Information
-                    _buildSectionHeader('Contact Information', Icons.contact_phone),
-                    const SizedBox(height: 16),
-                    _buildModernTextField(
-                      controller: _emailController,
-                      label: 'Email',
-                      icon: Icons.email,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value != null && value.isNotEmpty) {
-                          if (!value.contains('@')) {
-                            return 'Please enter a valid email';
-                          }
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _buildModernTextField(
-                      controller: _phoneController,
-                      label: 'Phone Number',
-                      icon: Icons.phone,
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildModernTextField(
-                      controller: _addressController,
-                      label: 'Address',
-                      icon: Icons.location_on,
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Section: Tax Configuration
-                    _buildSectionHeader('Tax Configuration', Icons.calculate),
-                    const SizedBox(height: 16),
-                    _buildModernTextField(
-                      controller: _taxController,
-                      label: 'Tax Percentage (%)',
-                      icon: Icons.percent,
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter tax percentage';
-                        }
-                        final tax = double.tryParse(value);
-                        if (tax == null || tax < 0 || tax > 100) {
-                          return 'Please enter a valid percentage (0-100)';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 40),
-
-                    // Save Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _saveProfile,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
-                              )
-                            : const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.save, size: 22),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Save Changes',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                        );
+                                      },
                                     ),
+                                  )
+                                : const Icon(
+                                    Icons.restaurant,
+                                    size: 50,
+                                    color: AppTheme.primaryColor,
                                   ),
-                                ],
-                              ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
+                    TextButton.icon(
+                      onPressed: _pickLogo,
+                      icon: const Icon(Icons.camera_alt),
+                      label: Text(_logoFile != null || _existingLogoPath != null
+                          ? 'Change Logo'
+                          : 'Add Logo'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppTheme.primaryColor,
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
+              const SizedBox(height: 32),
+
+              // Section: Basic Information
+              _buildSectionHeader('Basic Information', Icons.info_outline),
+              const SizedBox(height: 16),
+              _buildModernTextField(
+                controller: _nameController,
+                label: 'Restaurant Name',
+                icon: Icons.restaurant_menu,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter restaurant name';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildModernTextField(
+                controller: _codeController,
+                label: 'Restaurant Code',
+                icon: Icons.qr_code,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter restaurant code';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 32),
+
+              // Section: Contact Information
+              _buildSectionHeader('Contact Information', Icons.contact_phone),
+              const SizedBox(height: 16),
+              _buildModernTextField(
+                controller: _emailController,
+                label: 'Email',
+                icon: Icons.email,
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value != null && value.isNotEmpty) {
+                    if (!value.contains('@')) {
+                      return 'Please enter a valid email';
+                    }
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildModernTextField(
+                controller: _phoneController,
+                label: 'Phone Number',
+                icon: Icons.phone,
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 16),
+              _buildModernTextField(
+                controller: _addressController,
+                label: 'Address',
+                icon: Icons.location_on,
+                maxLines: 3,
+              ),
+              const SizedBox(height: 32),
+
+              // Section: Tax Configuration
+              _buildSectionHeader('Tax Configuration', Icons.calculate),
+              const SizedBox(height: 16),
+              _buildModernTextField(
+                controller: _taxController,
+                label: 'Tax Percentage (%)',
+                icon: Icons.percent,
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter tax percentage';
+                  }
+                  final tax = double.tryParse(value);
+                  if (tax == null || tax < 0 || tax > 100) {
+                    return 'Please enter a valid percentage (0-100)';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 40),
+
+              // Save Button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _saveProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.save, size: 22),
+                            SizedBox(width: 8),
+                            Text(
+                              'Save Changes',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

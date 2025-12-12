@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/providers/restaurant_provider.dart';
+import 'presentation/screens/splash_screen.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/dashboard/dashboard_screen.dart';
 
@@ -20,7 +21,10 @@ class RestaurantBillingApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home: isAuthenticated ? const DashboardScreen() : const LoginScreen(),
+      home: const SplashScreen(),
+      routes: {
+        '/home': (context) => isAuthenticated ? const DashboardScreen() : const LoginScreen(),
+      },
     );
   }
 }

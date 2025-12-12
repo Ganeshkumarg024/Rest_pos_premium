@@ -1,29 +1,13 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:restaurant_billing/core/utils/app_preferences.dart';
 
 class NotificationService {
   static final NotificationService instance = NotificationService._init();
-  
-  final FlutterLocalNotificationsPlugin _notificationsPlugin =
-      FlutterLocalNotificationsPlugin();
 
   NotificationService._init();
 
   Future<void> initialize() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-    );
-
-    await _notificationsPlugin.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: _onNotificationTap,
-    );
-  }
-
-  void _onNotificationTap(NotificationResponse response) {
-    // Handle notification tap
-    // Can navigate to specific screens based on payload
+    // Placeholder for future notification system integration
+    print('Notification service initialized');
   }
 
   Future<void> showOrderNotification({
@@ -31,24 +15,7 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'orders',
-      'Order Notifications',
-      channelDescription: 'Notifications for order updates',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: true,
-    );
-
-    const notificationDetails = NotificationDetails(android: androidDetails);
-
-    await _notificationsPlugin.show(
-      DateTime.now().millisecond,
-      title,
-      body,
-      notificationDetails,
-      payload: payload,
-    );
+    print('Order Notification: $title - $body');
   }
 
   Future<void> showPaymentNotification({
@@ -56,24 +23,7 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'payments',
-      'Payment Notifications',
-      channelDescription: 'Notifications for payment updates',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: true,
-    );
-
-    const notificationDetails = NotificationDetails(android: androidDetails);
-
-    await _notificationsPlugin.show(
-      DateTime.now().millisecond,
-      title,
-      body,
-      notificationDetails,
-      payload: payload,
-    );
+    print('Payment Notification: $title - $body');
   }
 
   Future<void> showSystemNotification({
@@ -81,52 +31,19 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
-    const androidDetails = AndroidNotificationDetails(
-      'system',
-      'System Notifications',
-      channelDescription: 'System notifications and alerts',
-      importance: Importance.defaultImportance,
-      priority: Priority.defaultImportance,
-      playSound: true,
-    );
-
-    const notificationDetails = NotificationDetails(android: androidDetails);
-
-    await _notificationsPlugin.show(
-      DateTime.now().millisecond,
-      title,
-      body,
-      notificationDetails,
-      payload: payload,
-    );
+    print('System Notification: $title - $body');
   }
 
   Future<void> showTestNotification() async {
-    const androidDetails = AndroidNotificationDetails(
-      'test',
-      'Test Notifications',
-      channelDescription: 'Test notifications',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: true,
-    );
-
-    const notificationDetails = NotificationDetails(android: androidDetails);
-
-    await _notificationsPlugin.show(
-      0,
-      'Test Notification',
-      'This is a test notification from The Golden Spoon',
-      notificationDetails,
-    );
+    print('Test Notification: This is a test notification from The Golden Spoon');
   }
 
   Future<void> cancelAll() async {
-    await _notificationsPlugin.cancelAll();
+    print('All notifications cancelled');
   }
 
   Future<void> cancel(int id) async {
-    await _notificationsPlugin.cancel(id);
+    print('Cancelled notification: $id');
   }
 
   // Helper methods to check if notifications should be shown
