@@ -1,6 +1,6 @@
 class AppConstants {
   // App Info
-  static const String appName = 'The Golden Spoon';
+  static const String appName = 'The Chozha Pos';
   static const String appVersion = '1.0.0';
 
   // Default Values

@@ -76,7 +76,7 @@ class _DashboardHome extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('The Golden Spoon'),
+        title: const Text('The Chozha Pos'),
         actions: [
           IconButton(
             icon: const Icon(Icons.person),

@@ -65,7 +65,7 @@ class PdfGeneratorService {
 
               // Restaurant Name
               pw.Text(
-                restaurant?.name ?? 'The Golden Spoon',
+                restaurant?.name ?? 'The Chozha Pos',
                 style: pw.TextStyle(
                   fontSize: 16,
                   fontWeight: pw.FontWeight.bold,

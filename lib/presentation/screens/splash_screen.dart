@@ -180,7 +180,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                               colors: [Colors.white, Colors.white70],
                             ).createShader(bounds),
                             child: const Text(
-                              'The Golden Spoon',
+                              'Chozha POS',
                               style: TextStyle(
                                 fontSize: 36,
                                 fontWeight: FontWeight.bold,

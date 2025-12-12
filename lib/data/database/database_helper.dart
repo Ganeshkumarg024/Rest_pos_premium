@@ -22,7 +22,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,  // Updated to version 4 for expenses table
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -139,6 +139,19 @@ class DatabaseHelper {
       )
     ''');
 
+    // Create expenses table
+    await db.execute('''
+      CREATE TABLE expenses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category TEXT NOT NULL,
+        amount REAL NOT NULL,
+        date TEXT NOT NULL,
+        description TEXT,
+        payment_method TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
     // Create settings table
     await db.execute('''
       CREATE TABLE ${DbConstants.tableSettings} (
@@ -188,6 +201,21 @@ class DatabaseHelper {
       await db.execute('''
         ALTER TABLE ${DbConstants.tableRestaurants}
         ADD COLUMN ${DbConstants.columnRestaurantTaxEnabled} INTEGER DEFAULT 1
+      ''');
+    }
+    
+    if (oldVersion < 4 && newVersion >= 4) {
+      // Migration from version 3 to 4: Create expenses table
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS expenses (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          category TEXT NOT NULL,
+          amount REAL NOT NULL,
+          date TEXT NOT NULL,
+          description TEXT,
+          payment_method TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        )
       ''');
     }
   }

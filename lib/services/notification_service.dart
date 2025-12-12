@@ -35,7 +35,7 @@ class NotificationService {
   }
 
   Future<void> showTestNotification() async {
-    print('Test Notification: This is a test notification from The Golden Spoon');
+    print('Test Notification: This is a test notification from The Chozha Pos');
   }
 
   Future<void> cancelAll() async {

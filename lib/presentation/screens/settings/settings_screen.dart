@@ -8,6 +8,7 @@ import 'package:restaurant_billing/presentation/screens/tables/table_management_
 import 'package:restaurant_billing/presentation/screens/settings/tax_settings_screen.dart';
 import 'package:restaurant_billing/presentation/screens/settings/notification_settings_screen.dart';
 import 'package:restaurant_billing/presentation/screens/settings/printer_settings_screen.dart';
+import 'package:restaurant_billing/presentation/screens/expenses/expense_list_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -158,6 +159,24 @@ class SettingsScreen extends ConsumerWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const TaxSettingsScreen(),
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: AppTheme.spacingM),
+
+          // Expense Tracker
+          _SettingCard(
+            icon: Icons.account_balance_wallet,
+            title: 'Expense Tracker',
+            subtitle: 'Track daily expenses, manage categories, and view reports.',
+            iconColor: Colors.orange,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ExpenseListScreen(),
                 ),
               );
             },

@@ -192,7 +192,7 @@ class _SplashScreenChefState extends State<SplashScreenChef> with TickerProvider
                               colors: [Colors.white, Colors.white70],
                             ).createShader(bounds),
                             child: const Text(
-                              'The Golden Spoon',
+                              'The Chozha Pos',
                               style: TextStyle(
                                 fontSize: 36,
                                 fontWeight: FontWeight.bold,
