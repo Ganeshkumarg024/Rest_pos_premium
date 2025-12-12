@@ -70,6 +70,12 @@ final dashboardStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async 
   return await repository.getTodayStats();
 });
 
+// Pending orders provider (orders awaiting payment)
+final pendingOrdersProvider = FutureProvider<List<OrderModel>>((ref) async {
+  final repository = ref.read(orderRepositoryProvider);
+  return await repository.getOrdersByStatus('open');
+});
+
 // Cart provider (for creating orders)
 class CartItem {
   final int menuItemId;

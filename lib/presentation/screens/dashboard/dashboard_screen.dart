@@ -8,6 +8,7 @@ import 'package:restaurant_billing/presentation/widgets/summary_card.dart';
 import 'package:restaurant_billing/presentation/widgets/quick_action_button.dart';
 import 'package:restaurant_billing/presentation/screens/orders/create_order_screen.dart';
 import 'package:restaurant_billing/presentation/screens/orders/orders_list_screen.dart';
+import 'package:restaurant_billing/presentation/screens/orders/pending_payments_screen.dart';
 import 'package:restaurant_billing/presentation/screens/menu/menu_screen.dart';
 import 'package:restaurant_billing/presentation/screens/reports/reports_screen.dart';
 import 'package:restaurant_billing/presentation/screens/settings/settings_screen.dart';
@@ -149,6 +150,17 @@ class _DashboardHome extends ConsumerWidget {
                       subtitle: '1 waiting >10min',
                       icon: Icons.pending_actions,
                       color: AppTheme.warningColor,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PendingPaymentsScreen(),
+                          ),
+                        ).then((_) {
+                          // Refresh dashboard after returning
+                          ref.invalidate(dashboardStatsProvider);
+                        });
+                      },
                     ),
                   ],
                 ),

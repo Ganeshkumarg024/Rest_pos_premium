@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math' as math;
-import 'package:restaurant_billing/core/theme/app_theme.dart';
+import '../../../core/theme/app_colors.dart';
+import '../auth/login_screen.dart';
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+class SplashScreenChef extends StatefulWidget {
+  const SplashScreenChef({Key? key}) : super(key: key);
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  State<SplashScreenChef> createState() => _SplashScreenChefState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenChefState extends State<SplashScreenChef> with TickerProviderStateMixin {
   late AnimationController _bounceController;
   late AnimationController _fadeController;
   late AnimationController _rotateController;
@@ -55,7 +56,16 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     
     Timer(const Duration(seconds: 4), () {
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 800),
+          ),
+        );
       }
     });
   }
@@ -84,8 +94,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppTheme.primaryColor,
-              AppTheme.primaryColor.withOpacity(0.85),
+              AppColors.primary,
+              AppColors.primaryDark,
               const Color(0xFF2C3E50),
             ],
           ),
@@ -114,40 +124,56 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                         children: [
                           // Glow effect
                           Container(
-                            width: 200,
-                            height: 200,
+                            width: 180,
+                            height: 180,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.white.withOpacity(0.3),
-                                  blurRadius: 50,
-                                  spreadRadius: 10,
+                                  blurRadius: 40,
+                                  spreadRadius: 20,
                                 ),
                               ],
                             ),
                           ),
-                          // Logo with proper circular clipping
+                          // Chef hat container
                           Container(
-                            width: 160,
-                            height: 160,
-                            decoration: BoxDecoration(
+                            width: 140,
+                            height: 140,
+                            decoration: const BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
+                            ),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                // Rotating utensils
+                                AnimatedBuilder(
+                                  animation: _rotateController,
+                                  builder: (context, child) {
+                                    return Transform.rotate(
+                                      angle: _rotateController.value * 2 * math.pi,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: const [
+                                          Icon(
+                                            Icons.restaurant_menu,
+                                            size: 30,
+                                            color: AppColors.primary,
+                                          ),
+                                          SizedBox(width: 20),
+                                          Icon(
+                                            Icons.restaurant,
+                                            size: 30,
+                                            color: AppColors.primary,
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
-                            ),
-                            padding: const EdgeInsets.all(20),
-                            child: ClipOval(
-                              child: Image.asset(
-                                'assets/images/logo.png',
-                                fit: BoxFit.contain,
-                              ),
                             ),
                           ),
                         ],
@@ -217,13 +243,25 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       child: Column(
                         children: [
                           SizedBox(
-                            width: 40,
-                            height: 40,
-                            child: CircularProgressIndicator(
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                              strokeWidth: 3,
+                            width: 50,
+                            height: 50,
+                            child: Stack(
+                              children: [
+                                CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white.withOpacity(0.3),
+                                  ),
+                                  strokeWidth: 2,
+                                ),
+                                Center(
+                                  child: CircularProgressIndicator(
+                                    valueColor: const AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                    strokeWidth: 3,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 20),

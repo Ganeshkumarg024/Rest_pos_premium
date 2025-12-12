@@ -159,42 +159,95 @@ class _ReportExportScreenState extends ConsumerState<ReportExportScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Period Info
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Report Period',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
+                    // Period Info - Now editable
+                    GestureDetector(
+                      onTap: () async {
+                        final DateTimeRange? picked = await showDateRangePicker(
+                          context: context,
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime.now(),
+                          initialDateRange: DateTimeRange(
+                            start: widget.dateRange.start,
+                            end: widget.dateRange.end,
+                          ),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: ColorScheme.light(
+                                  primary: AppTheme.primaryColor,
+                                  onPrimary: Colors.white,
+                                  surface: Colors.white,
+                                  onSurface: Colors.black,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                widget.periodName,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                              child: child!,
+                            );
+                          },
+                        );
+
+                        if (picked != null && mounted) {
+                          // Navigate back and pass new date range
+                          Navigator.pop(context, picked);
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppTheme.primaryColor.withOpacity(0.3),
+                            width: 2,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Report Period',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          Icon(
-                            Icons.calendar_today,
-                            color: AppTheme.primaryColor,
-                            size: 32,
-                          ),
-                        ],
+                                const SizedBox(height: 4),
+                                Text(
+                                  widget.periodName,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${DateFormat('MMM dd').format(widget.dateRange.start)} - ${DateFormat('MMM dd, yyyy').format(widget.dateRange.end)}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_today,
+                                  color: AppTheme.primaryColor,
+                                  size: 28,
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.edit,
+                                  color: AppTheme.primaryColor,
+                                  size: 20,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 

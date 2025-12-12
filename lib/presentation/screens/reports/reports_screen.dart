@@ -15,8 +15,13 @@ class ReportsScreen extends ConsumerStatefulWidget {
 
 class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   int _selectedPeriod = 0;
+  DateRange? _customDateRange;
 
   DateRange _getDateRange() {
+    if (_selectedPeriod == 3 && _customDateRange != null) {
+      return _customDateRange!;
+    }
+    
     switch (_selectedPeriod) {
       case 0:
         return DateRange.today();
@@ -26,6 +31,43 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         return DateRange.thisMonth();
       default:
         return DateRange.today();
+    }
+  }
+
+  Future<void> _selectCustomDateRange() async {
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      initialDateRange: _customDateRange != null
+          ? DateTimeRange(
+              start: _customDateRange!.start,
+              end: _customDateRange!.end,
+            )
+          : DateTimeRange(
+              start: DateTime.now().subtract(const Duration(days: 7)),
+              end: DateTime.now(),
+            ),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppTheme.primaryColor,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _customDateRange = DateRange(start: picked.start, end: picked.end);
+        _selectedPeriod = 3;
+      });
     }
   }
 
@@ -55,7 +97,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             actions: [
               IconButton(
                 icon: const Icon(Icons.calendar_today, color: Colors.black),
-                onPressed: () {},
+                onPressed: _selectCustomDateRange,
+                tooltip: 'Select Custom Date Range',
               ),
             ],
           ),
@@ -92,6 +135,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                           _buildPeriodTab('This Month', _selectedPeriod == 2, () {
                             setState(() => _selectedPeriod = 2);
                           }),
+                          _buildPeriodTab('Custom', _selectedPeriod == 3, _selectCustomDateRange),
                         ],
                       ),
                     ),
