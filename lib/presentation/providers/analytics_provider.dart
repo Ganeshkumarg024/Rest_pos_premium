@@ -10,6 +10,17 @@ class AnalyticsDateRange {
   final DateTime endDate;
 
   AnalyticsDateRange({required this.startDate, required this.endDate});
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AnalyticsDateRange &&
+          runtimeType == other.runtimeType &&
+          startDate.isAtSameMomentAs(other.startDate) &&
+          endDate.isAtSameMomentAs(other.endDate);
+
+  @override
+  int get hashCode => startDate.hashCode ^ endDate.hashCode;
 }
 
 // Weekly sales trend provider

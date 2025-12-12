@@ -11,7 +11,7 @@ import 'package:restaurant_billing/presentation/screens/settings/printer_setting
 import 'package:restaurant_billing/presentation/screens/expenses/expense_list_screen.dart';
 import 'package:restaurant_billing/presentation/screens/todos/todo_list_screen.dart';
 import 'package:restaurant_billing/presentation/screens/analytics/sales_analytics_screen.dart';
-import 'package:restaurant_billing/presentation/screens/analytics/analytics_debug_screen.dart';
+
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -223,21 +223,7 @@ class SettingsScreen extends ConsumerWidget {
 
           const SizedBox(height: AppTheme.spacingM),
 
-          // Analytics Debug (Temporary)
-          _SettingCard(
-            icon: Icons.bug_report,
-            title: 'Analytics Debug',
-            subtitle: 'Diagnose analytics data issues',
-            iconColor: Colors.red,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AnalyticsDebugScreen(),
-                ),
-              );
-            },
-          ),
+
 
           const SizedBox(height: AppTheme.spacingM),
 
